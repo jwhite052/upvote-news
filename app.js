@@ -1,4 +1,28 @@
-var app = angular.module('upvoteNews', []);
+var app = angular.module('upvoteNews', ['ui.router']);
+
+app.config([
+  '$stateProvider',
+  '$urlRouterProvider',
+  function($stateProvider, $urlRouterProvider) {
+    $stateProvider
+      .state('home', {
+        url: '/home',
+        templateUrl: '/home.html',
+        controller: 'MainCtrl'
+      }
+    );
+    $urlRouterProvider.otherwise('home');
+  }
+]);
+
+app.factory('posts', [
+  function(){
+    var obj = {
+      posts: []
+    };
+    return obj;
+  }
+]);
 
 app.controller('MainCtrl', [
   '$scope',
@@ -21,11 +45,4 @@ app.controller('MainCtrl', [
     $scope.incrementUpvotes = function(post) {
       post.upvotes += 1;
     };
-}]);
-
-app.factory('posts', [function(){
-  var o = {
-    posts: []
-  };
-  return o;
 }]);
