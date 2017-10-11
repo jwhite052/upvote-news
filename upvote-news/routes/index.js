@@ -28,6 +28,7 @@ router.post('/posts', function(req, res, next) {
   });
 });
 
+// Preload post objects on routes with ':post'
 router.param('post', function(req, res, next, id) {
   var query = Post.findById(id);
 
@@ -40,30 +41,27 @@ router.param('post', function(req, res, next, id) {
   });
 });
 
+// Preload comment objects on routes with ':comment'
 router.param('comment', function(req, res, next, id) {
   var query = Comment.findById(id);
 
   query.exec(function (err, comment){
     if (err) { return next(err); }
-    if (!post) { return next(new Error('can\'t find comment')); }
+    if (!comment) { return next(new Error('can\'t find comment')); }
 
     req.comment = comment;
     return next();
   });
 });
 
-router.get('/posts/:post', function(req, res) {
-  res.json(req.post);
-});
-
+// return a post
 router.get('/posts/:post', function(req, res, next) {
   req.post.populate('comments', function(err, post) {
-    if (err) { return next(err); }
-
     res.json(post);
   });
 });
 
+// upvote a post
 router.put('/posts/:post/upvote', function(req, res, next) {
   req.post.upvote(function(err, post){
     if (err) { return next(err); }
@@ -72,14 +70,7 @@ router.put('/posts/:post/upvote', function(req, res, next) {
   });
 });
 
-router.put('/posts/:post/comments/:comments/upvote', function(req, res, next) {
-  req.comment.upvote(function(err, comment){
-    if (err) { return next(err); }
-
-    res.json(comment);
-  });
-});
-
+// create a new comment
 router.post('/posts/:post/comments', function(req, res, next) {
   var comment = new Comment(req.body);
   comment.post = req.post;
@@ -93,6 +84,15 @@ router.post('/posts/:post/comments', function(req, res, next) {
 
       res.json(comment);
     });
+  });
+});
+
+// upvote a comment
+router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
+  req.comment.upvote(function(err, comment){
+    if (err) { return next(err); }
+
+    res.json(comment);
   });
 });
 
