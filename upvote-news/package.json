@@ -1,9 +1,10 @@
 {
   "name": "upvote-news",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "main": "app.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
