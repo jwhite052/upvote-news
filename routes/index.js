@@ -1,3 +1,5 @@
+// Routes
+
 var express = require('express');
 var jwt = require('express-jwt');
 var router = express.Router();
@@ -62,6 +64,11 @@ router.param('comment', function(req, res, next, id) {
 // return a post
 router.get('/posts/:post', function(req, res, next) {
   req.post.populate('comments', function(err, post) {
+    if (err) {
+      console.log("Errored here");
+      return next(err);
+    }
+
     res.json(post);
   });
 });
@@ -78,23 +85,21 @@ router.put('/posts/:post/upvote', auth, function(req, res, next) {
 // create a new comment
 router.post('/posts/:post/comments', auth, function(req, res, next) {
   var comment = new Comment(req.body);
-  comment.post = req.post;
+  comment.post = req.post._id;
   comment.author = req.payload.username;
 
   comment.save(function(err, comment){
-    if(err){ return next(err); }
-
+    if(err) { return next(err); }
     req.post.comments.push(comment);
     req.post.save(function(err, post) {
-      if(err){ return next(err); }
-
+      if(err) { return next(err); }
       res.json(comment);
     });
   });
 });
 
 // upvote a comment
-router.put('/posts/:post/comments/:comment/upvote', auth, function(req, res, next) {
+router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
   req.comment.upvote(function(err, comment){
     if (err) { return next(err); }
 

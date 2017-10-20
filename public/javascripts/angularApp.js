@@ -1,16 +1,18 @@
-var app = angular.module('upvoteNews', ['ui.router']);
+// Services
 
-app.config([
+angular.module('upvoteNews', ['ui.router'])
+.config([
 '$stateProvider',
 '$urlRouterProvider',
 function($stateProvider, $urlRouterProvider) {
+
   $stateProvider
     .state('home', {
       url: '/home',
       templateUrl: '/home.html',
       controller: 'MainCtrl',
       resolve: {
-        postPromise: ['posts', function(posts) {
+        postPromise: ['posts', function(posts){
           return posts.getAll();
         }]
       }
@@ -47,60 +49,8 @@ function($stateProvider, $urlRouterProvider) {
     });
 
   $urlRouterProvider.otherwise('home');
-}]);
-
-app.factory('auth', ['$http', '$window', function($http, $window){
-  var auth = {};
-
-  auth.saveToken = function (token){
-    $window.localStorage['upvote-news-token'] = token;
-  };
-
-  auth.getToken = function (){
-    return $window.localStorage['upvote-news-token'];
-  };
-
-  auth.isLoggedIn = function(){
-    var token = auth.getToken();
-
-    if(token){
-      var payload = JSON.parse($window.atob(token.split('.')[1]));
-
-      return payload.exp > Date.now() / 1000;
-    } else {
-      return false;
-    }
-  };
-
-  auth.currentUser = function(){
-    if(auth.isLoggedIn()){
-      var token = auth.getToken();
-      var payload = JSON.parse($window.atob(token.split('.')[1]));
-
-      return payload.username;
-    }
-  };
-
-  auth.register = function(user){
-    return $http.post('/register', user).success(function(data){
-      auth.saveToken(data.token);
-    });
-  };
-
-  auth.logIn = function(user){
-    return $http.post('/login', user).success(function(data){
-      auth.saveToken(data.token);
-    });
-  };
-
-  auth.logOut = function(){
-    $window.localStorage.removeItem('flapper-news-token');
-  };
-
-  return auth;
-}]);
-
-app.factory('posts', ['$http', 'auth', function($http, auth) {
+}])
+.factory('posts', ['$http', 'auth', function($http, auth){
   var o = {
     posts: []
   };
@@ -119,7 +69,7 @@ app.factory('posts', ['$http', 'auth', function($http, auth) {
 
   o.create = function(post) {
     return $http.post('/posts', post, {
-      headers: {Authorization: 'Bearer '+auth.getToken()}
+      headers: {Authorization: 'Bearer ' + auth.getToken()}
     }).success(function(data){
       o.posts.push(data);
     });
@@ -127,7 +77,7 @@ app.factory('posts', ['$http', 'auth', function($http, auth) {
 
   o.upvote = function(post) {
     return $http.put('/posts/' + post._id + '/upvote', null, {
-      headers: {Authorization: 'Bearer '+auth.getToken()}
+      headers: {Authorization: 'Bearer ' + auth.getToken()}
     }).success(function(data){
       post.upvotes += 1;
     });
@@ -135,22 +85,65 @@ app.factory('posts', ['$http', 'auth', function($http, auth) {
 
   o.addComment = function(id, comment) {
     return $http.post('/posts/' + id + '/comments', comment, {
-      headers: {Authorization: 'Bearer '+auth.getToken()}
+      headers: {Authorization: 'Bearer ' + auth.getToken()}
     });
   };
 
   o.upvoteComment = function(post, comment) {
-    return $http.put('/posts/' + post._id + '/comments/'+ comment._id + '/upvote', null, {
-      headers: {Authorization: 'Bearer '+auth.getToken()}
+    return $http.put('/posts/' + post._id + '/comments/'+ comment._id + '/upvote', {
+      headers: {Authorization: 'Bearer ' + auth.getToken()}
     }).success(function(data){
       comment.upvotes += 1;
     });
   };
 
   return o;
-}]);
+}])
+.factory('auth', ['$http', '$window', '$rootScope', function($http, $window, $rootScope){
+   var auth = {
+    saveToken: function (token){
+      $window.localStorage['upvote-news-token'] = token;
+    },
+    getToken: function (){
+      return $window.localStorage['upvote-news-token'];
+    },
+    isLoggedIn: function(){
+      var token = auth.getToken();
 
-app.controller('MainCtrl', [
+      if(token){
+        var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+        return payload.exp > Date.now() / 1000;
+      } else {
+        return false;
+      }
+    },
+    currentUser: function(){
+      if(auth.isLoggedIn()){
+        var token = auth.getToken();
+        var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+        return payload.username;
+      }
+    },
+    register: function(user){
+      return $http.post('/register', user).success(function(data){
+        auth.saveToken(data.token);
+      });
+    },
+    logIn: function(user){
+      return $http.post('/login', user).success(function(data){
+        auth.saveToken(data.token);
+      });
+    },
+    logOut: function(){
+      $window.localStorage.removeItem('upvote-news-token');
+    }
+  };
+
+  return auth;
+}])
+.controller('MainCtrl', [
 '$scope',
 'posts',
 'auth',
@@ -158,12 +151,11 @@ function($scope, posts, auth){
   $scope.posts = posts.posts;
   $scope.isLoggedIn = auth.isLoggedIn;
 
-  $scope.addPost = function() {
-    if (!$scope.title || $scope.title === '') { return; }
-    if (!$scope.link || $scope.link === '') { return; }
+  $scope.addPost = function(){
+    if($scope.title === '' || $scope.title === null || $scope.title === undefined) { return; }
     posts.create({
       title: $scope.title,
-      link: $scope.link
+      link: $scope.link,
     });
     $scope.title = '';
     $scope.link = '';
@@ -172,9 +164,9 @@ function($scope, posts, auth){
   $scope.incrementUpvotes = function(post) {
     posts.upvote(post);
   };
-}]);
 
-app.controller('PostsCtrl', [
+}])
+.controller('PostsCtrl', [
 '$scope',
 'posts',
 'post',
@@ -184,22 +176,23 @@ function($scope, posts, post, auth){
   $scope.isLoggedIn = auth.isLoggedIn;
 
   $scope.addComment = function(){
-    if($scope.body === '') { return; }
+    if($scope.body === '' || $scope.body === null || $scope.body === undefined) { return; }
+
     posts.addComment(post._id, {
       body: $scope.body,
-      author: 'user'
+      author: auth.currentUser()
     }).success(function(comment) {
       $scope.post.comments.push(comment);
     });
+
     $scope.body = '';
   };
 
   $scope.incrementUpvotes = function(comment){
     posts.upvoteComment(post, comment);
   };
-}]);
-
-app.controller('AuthCtrl', [
+}])
+.controller('AuthCtrl', [
 '$scope',
 '$state',
 'auth',
@@ -221,9 +214,8 @@ function($scope, $state, auth){
       $state.go('home');
     });
   };
-}]);
-
-app.controller('NavCtrl', [
+}])
+.controller('NavCtrl', [
 '$scope',
 'auth',
 function($scope, auth){

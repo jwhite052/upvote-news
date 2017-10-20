@@ -11,16 +11,16 @@
       .glyphicon-thumbs-up { cursor:pointer }
     </style>
   </head>
-  <body ng-app="upvoteNews" ng-controller="MainCtrl">
+  <body ng-app="upvoteNews">
 
     <nav class="navbar navbar-default pull-right" ng-controller="NavCtrl">
-    <ul class="nav navbar-nav">
-      <li ng-show="isLoggedIn()"><a>{{ currentUser() }}</a></li>
-      <li ng-show="isLoggedIn()"><a href="" ng-click="logOut()">Log Out</a></li>
-      <li ng-hide="isLoggedIn()"><a href="/#/login">Log In</a></li>
-      <li ng-hide="isLoggedIn()"><a href="/#/register">Register</a></li>
-    </ul>
-  </nav>
+      <ul class="nav navbar-nav">
+        <li ng-show="isLoggedIn()"><a>{{ currentUser() }}</a></li>
+        <li ng-show="isLoggedIn()"><a href="" ng-click="logOut()">Log Out</a></li>
+        <li ng-hide="isLoggedIn()"><a href="/#/login">Log In</a></li>
+        <li ng-hide="isLoggedIn()"><a href="/#/register">Register</a></li>
+      </ul>
+    </nav>
 
     <section class="container">
       <div class="row">
@@ -151,7 +151,7 @@
     </script>
     <script type="text/ng-template" id="/login.html">
       <div class="page-header">
-        <h1>Flapper News</h1>
+        <h1>UpVote News</h1>
       </div>
 
       <div ng-show="error" class="alert alert-danger row">
