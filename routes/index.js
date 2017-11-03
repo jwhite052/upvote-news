@@ -64,10 +64,7 @@ router.param('comment', function(req, res, next, id) {
 // return a post
 router.get('/posts/:post', function(req, res, next) {
   req.post.populate('comments', function(err, post) {
-    if (err) {
-      console.log("Errored here");
-      return next(err);
-    }
+    if (err) { return next(err); }
 
     res.json(post);
   });
@@ -87,7 +84,6 @@ router.post('/posts/:post/comments', auth, function(req, res, next) {
   var comment = new Comment(req.body);
   comment.post = req.post._id;
   comment.author = req.payload.username;
-
   comment.save(function(err, comment){
     if(err) { return next(err); }
     req.post.comments.push(comment);
