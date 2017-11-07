@@ -10,7 +10,12 @@ var passport = require('passport');
 var PRODUCTION_MODE = true;
 
 if (PRODUCTION_MODE) {
-  mongoose.connect('mongodb://admin:admin@ds155150.mlab.com:55150/devbase');
+  mongoose.connect(process.env.MONGODB_URI, function(err) {
+    if (err) {
+      console.log('MONGODB_URI=' + process.env.MONGODB_URI);
+      throw err;
+    }
+  });
 } else {
   mongoose.connect('mongodb://localhost/upvotenews');
 }
