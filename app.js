@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
 
-var PRODUCTION_MODE = true;
+var PRODUCTION_MODE = false;
 
 if (PRODUCTION_MODE) {
   mongoose.connect(process.env.MONGODB_URI, function(err) {
