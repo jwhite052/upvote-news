@@ -46,6 +46,16 @@ function($stateProvider, $urlRouterProvider) {
           $state.go('home');
         }
       }]
+    })
+    .state('user', {
+      url: '/user',
+      templateUrl: '/user.html',
+      controller: 'UserProfileCtrl',
+      onEnter: ['$state', 'auth', function($state, auth){
+        if(!auth.isLoggedIn()){
+          $state.go('home');
+        }
+      }]
     });
 
   $urlRouterProvider.otherwise('home');
@@ -108,13 +118,19 @@ function($stateProvider, $urlRouterProvider) {
       return $window.localStorage['upvote-news-token'];
     },
     isLoggedIn: function(){
+      console.log('Logged in: ');
       var token = auth.getToken();
-
+      //console.log("Token:" + token);
       if(token){
+        console.log('TRUE');
         var payload = JSON.parse($window.atob(token.split('.')[1]));
-
+        // console.log("Payload: ");
+        // console.log(payload.exp);
+        // console.log(Date.now() / 1000);
+        // console.log(payload.exp > Date.now() / 1000);
         return payload.exp > Date.now() / 1000;
       } else {
+        console.log('FALSE');
         return false;
       }
     },
@@ -138,6 +154,11 @@ function($stateProvider, $urlRouterProvider) {
     },
     logOut: function(){
       $window.localStorage.removeItem('upvote-news-token');
+    },
+    saveProfile: function(user){
+      return $http.post('/user', user).success(function(data){
+        console.log("Save user profile");
+      });
     }
   };
 
@@ -155,7 +176,7 @@ function($scope, posts, auth){
     if($scope.title === '' || $scope.title === null || $scope.title === undefined) { return; }
     posts.create({
       title: $scope.title,
-      link: $scope.link,
+      link: $scope.link
     });
     $scope.title = '';
     $scope.link = '';
@@ -214,6 +235,12 @@ function($scope, $state, auth){
       $state.go('home');
     });
   };
+
+  $scope.saveProfile = function(){
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.currentUser = auth.currentUser;
+    $scope.logOut = auth.logOut;
+  };
 }])
 .controller('NavCtrl', [
 '$scope',
@@ -222,4 +249,16 @@ function($scope, auth){
   $scope.isLoggedIn = auth.isLoggedIn;
   $scope.currentUser = auth.currentUser;
   $scope.logOut = auth.logOut;
+}])
+.controller('UserProfileCtrl', [
+'$scope',
+'$state',
+'auth',
+function($scope, $state, auth){
+  $scope.isLoggedIn = auth.isLoggedIn;
+  $scope.currentUser = auth.currentUser;
+  $scope.logOut = function() {
+    auth.logOut();
+    $state.reload(); // reload page
+  };
 }]);
