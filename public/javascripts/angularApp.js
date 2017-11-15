@@ -244,11 +244,15 @@ function($scope, $state, auth){
 }])
 .controller('NavCtrl', [
 '$scope',
+'$state',
 'auth',
-function($scope, auth){
+function($scope, $state, auth){
   $scope.isLoggedIn = auth.isLoggedIn;
   $scope.currentUser = auth.currentUser;
-  $scope.logOut = auth.logOut;
+  $scope.logOut = function() {
+    auth.logOut();
+    $state.go('home'); // redirect home
+  };
 }])
 .controller('UserProfileCtrl', [
 '$scope',
