@@ -139,9 +139,10 @@ router.post('/login', function(req, res, next){
   })(req, res, next);
 });
 
-// login
-router.get('/account', function(req, res, next){
-
+// User Profile
+router.get('/user', function(req, res, next){
+  user.setFirstName(req.body.firstname);
+  user.setLastName(req.body.lastname)
 });
 
 module.exports = router;
