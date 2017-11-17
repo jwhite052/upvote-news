@@ -33,7 +33,7 @@
             <li class="nav-item"><a class="nav-link">History</a></li>
           </ul>
           <ul class="navbar-nav" ng-cloak>
-            <li class="nav-item" ng-show="isLoggedIn()"><a class="nav-link" href="/#/user">{{ currentUser() }}</a></li>
+            <li class="nav-item" ng-show="isLoggedIn()"><a class="nav-link" href="/#/account">{{ currentUser() }}</a></li>
             <li class="nav-item" ng-show="isLoggedIn()"><a class="nav-link" href="" ng-click="logOut()">Log Out</a></li>
             <li class="nav-item" ng-hide="isLoggedIn()"><a class="nav-link" href="/#/login">Log In</a></li>
             <li class="nav-item" ng-hide="isLoggedIn()"><a class="nav-link" href="/#/register">Register</a></li>
@@ -231,7 +231,7 @@
       </div>
     </script>
 
-    <script type="text/ng-template" id="/user.html">
+    <script type="text/ng-template" id="/account.html">
       <div class="container">
         <div class="row">
           <div class="col-md-12">
@@ -245,7 +245,7 @@
 
             <h4 ng-show="isLoggedIn()">User: {{ currentUser() }}</h4>
 
-            <form ng-submit="saveProfile()" style="margin-top:30px;">
+            <form ng-submit="updateAccount()" style="margin-top:30px;">
               <div class="form-group">
                 <label for="registerInputFirstName">First Name</label>
                 <input type="text" class="form-control" id="registerInputFirstName" aria-describedby="registerInputFirstNameHelp" placeholder="First name" ng-model="user.firstname">

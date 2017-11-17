@@ -47,10 +47,10 @@ function($stateProvider, $urlRouterProvider) {
         }
       }]
     })
-    .state('user', {
-      url: '/user',
-      templateUrl: '/user.html',
-      controller: 'UserProfileCtrl',
+    .state('account', {
+      url: '/account',
+      templateUrl: '/account.html',
+      controller: 'AccountCtrl',
       onEnter: ['$state', 'auth', function($state, auth){
         if(!auth.isLoggedIn()){
           $state.go('home');
@@ -109,6 +109,19 @@ function($stateProvider, $urlRouterProvider) {
 
   return o;
 }])
+.factory('account', ['$http', 'auth', function($http, auth){
+  var account = {
+    save: function(user) {
+      return $http.post('/account', user, {
+        headers: {Authorization: 'Bearer ' + auth.getToken()}
+      }).success(function(data){
+        o.posts.push(data);
+      });
+    }
+  }
+
+  return account;
+}])
 .factory('auth', ['$http', '$window', '$rootScope', function($http, $window, $rootScope){
    var auth = {
     saveToken: function (token){
@@ -118,11 +131,11 @@ function($stateProvider, $urlRouterProvider) {
       return $window.localStorage['upvote-news-token'];
     },
     isLoggedIn: function(){
-      console.log('Logged in: ');
+      // console.log('Logged in: ');
       var token = auth.getToken();
       //console.log("Token:" + token);
       if(token){
-        console.log('TRUE');
+        // console.log('TRUE');
         var payload = JSON.parse($window.atob(token.split('.')[1]));
         // console.log("Payload: ");
         // console.log(payload.exp);
@@ -130,7 +143,7 @@ function($stateProvider, $urlRouterProvider) {
         // console.log(payload.exp > Date.now() / 1000);
         return payload.exp > Date.now() / 1000;
       } else {
-        console.log('FALSE');
+        // console.log('FALSE');
         return false;
       }
     },
@@ -154,11 +167,6 @@ function($stateProvider, $urlRouterProvider) {
     },
     logOut: function(){
       $window.localStorage.removeItem('upvote-news-token');
-    },
-    saveProfile: function(user){
-      return $http.post('/user', user).success(function(data){
-        console.log("Save user profile");
-      });
     }
   };
 
@@ -213,6 +221,25 @@ function($scope, posts, post, auth){
     posts.upvoteComment(post, comment);
   };
 }])
+.controller('AccountCtrl', [
+'$scope',
+'$state',
+'auth',
+'account',
+function($scope, $state, auth){
+  // $scope.user = user;
+  $scope.isLoggedIn = auth.isLoggedIn;
+  $scope.currentUser = auth.currentUser;
+  $scope.updateAccount = function(){
+    // return $http.post('/user', user).success(function(data){
+      console.log("Save user profile");
+    // });
+  };
+  $scope.logOut = function() {
+    auth.logOut();
+    $state.reload(); // reload page
+  };
+}])
 .controller('AuthCtrl', [
 '$scope',
 '$state',
@@ -235,14 +262,6 @@ function($scope, $state, auth){
       $state.go('home');
     });
   };
-
-  $scope.saveProfile = function(){
-    auth.saveProfile($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-      $state.go('home');
-    });
-  };
 }])
 .controller('NavCtrl', [
 '$scope',
@@ -254,17 +273,5 @@ function($scope, $state, auth){
   $scope.logOut = function() {
     auth.logOut();
     $state.go('home'); // redirect home
-  };
-}])
-.controller('UserProfileCtrl', [
-'$scope',
-'$state',
-'auth',
-function($scope, $state, auth){
-  $scope.isLoggedIn = auth.isLoggedIn;
-  $scope.currentUser = auth.currentUser;
-  $scope.logOut = function() {
-    auth.logOut();
-    $state.reload(); // reload page
   };
 }]);
